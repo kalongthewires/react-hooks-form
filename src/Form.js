@@ -1,4 +1,5 @@
 import React from 'react';
+import { isEmpty } from 'lodash';
 import useForm from './useForm';
 
 function Toggle({ name, onChange, option1, option2, value }) {
@@ -30,8 +31,20 @@ function Toggle({ name, onChange, option1, option2, value }) {
   );
 }
 
+function validate(values) {
+  let errors = {};
+
+  if (isEmpty(values.email))
+    errors = { ...errors, email: 'Email address is required!' };
+  if (isEmpty(values.name)) errors = { ...errors, name: 'Name is required!' };
+  if (values.userType === 'robot')
+    errors = { ...errors, userType: 'No robots allowed! :( :(' };
+
+  return errors;
+}
+
 function SignUpForm({ className }) {
-  function onSubmit(values) {
+  function onSubmit(values, errors) {
     console.log(values);
   }
 
@@ -42,12 +55,20 @@ function SignUpForm({ className }) {
     userType: 'person',
   };
 
-  const { values, handleChange, handleSubmit } = useForm({
+  const {
+    errors,
+    isValid,
+    values,
+    handleChange,
+    handleSubmit,
+    submitCount,
+  } = useForm({
     initialValues,
     onSubmit,
+    validate,
   });
 
-  // TODO: Handle errors
+  const showErrors = !isValid && submitCount > 0;
 
   return (
     <div className="section is-fullheight">
@@ -62,10 +83,10 @@ function SignUpForm({ className }) {
                   name="email"
                   onChange={handleChange}
                   placeholder="Email"
-                  required
                   type="email"
                   value={values.email}
                 />
+                {showErrors && errors.email && <p>{errors.email}</p>}
               </div>
               <div className="field">
                 <Toggle
@@ -75,6 +96,7 @@ function SignUpForm({ className }) {
                   option2="person"
                   value={values.userType}
                 />
+                {showErrors && errors.userType && <p>{errors.userType}</p>}
               </div>
               <div className="field">
                 <input
@@ -84,10 +106,10 @@ function SignUpForm({ className }) {
                   name="name"
                   onChange={handleChange}
                   placeholder="Name"
-                  required
                   type="text"
                   value={values.name}
                 />
+                {showErrors && errors.name && <p>{errors.name}</p>}
               </div>
               <div className="field">
                 <input
@@ -97,12 +119,15 @@ function SignUpForm({ className }) {
                   name="phone"
                   onChange={handleChange}
                   placeholder="Phone Number"
-                  required
                   type="tel"
                   values={values.phone}
                 />
               </div>
-              <button className="button" type="submit">
+              <button
+                className="button is-primary"
+                disabled={!isValid}
+                type="submit"
+              >
                 Sign Up
               </button>
             </form>
