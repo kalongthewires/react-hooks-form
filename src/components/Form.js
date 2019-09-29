@@ -1,74 +1,32 @@
-import React from 'react';
-import { isEmpty } from 'lodash';
-import useForm from './useForm';
+import PropTypes from "prop-types";
+import React from "react";
+import * as yup from "yup";
 
-function Toggle({ name, onChange, option1, option2, value }) {
-  return (
-    <>
-      <label className="radio">
-        <input
-          checked={value === option1}
-          onChange={onChange}
-          type="radio"
-          id={option1}
-          name={name}
-          value={option1}
-        />
-        {option1}
-      </label>
-      <label className="radio">
-        <input
-          checked={value === option2}
-          onChange={onChange}
-          type="radio"
-          id={option2}
-          name={name}
-          value={option2}
-        />
-        {option2}
-      </label>
-    </>
-  );
-}
+import useForm from "../hooks/useForm";
+import Toggle from "./Toggle";
 
-function validate(values) {
-  let errors = {};
+const initialValues = {
+  email: "",
+  name: "",
+  phone: "",
+  userType: "person"
+};
 
-  if (isEmpty(values.email))
-    errors = { ...errors, email: 'Email address is required!' };
-  if (isEmpty(values.name)) errors = { ...errors, name: 'Name is required!' };
-  if (values.userType === 'robot')
-    errors = { ...errors, userType: 'No robots allowed! :( :(' };
-
-  return errors;
-}
+const schema = yup.object().shape({
+  name: yup.string().required("Name is required!"),
+  email: yup.string().required("Email is required!")
+});
 
 function SignUpForm({ className }) {
-  function onSubmit(values, errors) {
+  const handleSignUp = values => {
     console.log(values);
-  }
-
-  const initialValues = {
-    email: '',
-    name: '',
-    phone: '',
-    userType: 'person',
   };
 
-  const {
-    errors,
-    isValid,
-    values,
-    handleChange,
-    handleSubmit,
-    submitCount,
-  } = useForm({
+  const { errors, handleChange, handleSubmit, values } = useForm({
     initialValues,
-    onSubmit,
-    validate,
+    onSubmit: handleSignUp,
+    schema
   });
-
-  const showErrors = !isValid && submitCount > 0;
 
   return (
     <div className="section is-fullheight">
@@ -86,7 +44,7 @@ function SignUpForm({ className }) {
                   type="email"
                   value={values.email}
                 />
-                {showErrors && errors.email && <p>{errors.email}</p>}
+                {errors.email && <p>{errors.email}</p>}
               </div>
               <div className="field">
                 <Toggle
@@ -96,7 +54,6 @@ function SignUpForm({ className }) {
                   option2="person"
                   value={values.userType}
                 />
-                {showErrors && errors.userType && <p>{errors.userType}</p>}
               </div>
               <div className="field">
                 <input
@@ -109,7 +66,7 @@ function SignUpForm({ className }) {
                   type="text"
                   value={values.name}
                 />
-                {showErrors && errors.name && <p>{errors.name}</p>}
+                {errors.name && <p>{errors.name}</p>}
               </div>
               <div className="field">
                 <input
@@ -123,11 +80,7 @@ function SignUpForm({ className }) {
                   values={values.phone}
                 />
               </div>
-              <button
-                className="button is-primary"
-                disabled={!isValid}
-                type="submit"
-              >
+              <button className="button is-primary" type="submit">
                 Sign Up
               </button>
             </form>
@@ -137,5 +90,9 @@ function SignUpForm({ className }) {
     </div>
   );
 }
+
+SignUpForm.propTypes = {
+  className: PropTypes.string
+};
 
 export default SignUpForm;
